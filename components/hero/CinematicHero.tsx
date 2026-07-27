@@ -39,7 +39,7 @@ export default function CinematicHero() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: "top top",
-        end: "+=5000", // 5000px of scrolling for the hero
+        end: "+=2000", // Shorter scroll distance for faster transitions
         pin: true,
         scrub: 1, // Smooth scrubbing
       },
@@ -76,11 +76,40 @@ export default function CinematicHero() {
   }, { scope: containerRef });
 
   return (
-    <section ref={containerRef} className="relative h-screen w-full overflow-hidden bg-transparent z-10 pointer-events-none">
+    <section id="hero" ref={containerRef} className="relative h-screen w-full overflow-hidden bg-transparent z-10 pointer-events-none">
+      
+      {/* Persistent HUD Overlay */}
+      <div className="absolute inset-0 p-6 md:p-10 flex flex-col justify-between z-50 pointer-events-none font-mono text-[10px] md:text-xs text-white/40 tracking-[0.2em] uppercase">
+        <div className="flex justify-between items-start">
+          <div className="flex flex-col gap-1">
+            <span className="text-white/80">Bhyresh BS</span>
+            <span>Creative Director // Engineer</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>SYS. ONLINE</span>
+          </div>
+        </div>
+        <div className="flex justify-between items-end">
+          <div className="flex flex-col gap-1">
+            <span>LAT: 12.9716 N</span>
+            <span>LON: 77.5946 E</span>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <span>SCROLL TO EXPLORE</span>
+            <div className="w-[1px] h-12 bg-gradient-to-b from-white/40 to-transparent"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Subtle Background Grid */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)]"></div>
       
       {/* SCENE 1 */}
-      <div ref={scene1Ref} className="absolute inset-0 flex items-center justify-center">
-        <h1 className="text-4xl md:text-6xl font-light tracking-widest text-white/80">Hello.</h1>
+      <div ref={scene1Ref} className="absolute inset-0 flex flex-col items-center justify-center">
+        <p className="text-white/40 tracking-[0.3em] font-mono text-sm mb-6 uppercase">System Boot Sequence Initiated</p>
+        <h1 className="text-7xl md:text-9xl font-light tracking-widest text-white/90">HELLO.</h1>
+        <div className="mt-12 w-[1px] h-24 bg-gradient-to-b from-white/30 to-transparent"></div>
       </div>
 
       {/* SCENE 2 */}
@@ -89,6 +118,9 @@ export default function CinematicHero() {
         <h2 className="scene-2-text text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter text-white drop-shadow-2xl" style={{ perspective: "1000px" }}>
           Bhyresh BS
         </h2>
+        <p className="scene-2-text mt-6 text-xl md:text-2xl font-light text-white/60 tracking-wide">
+          AI/ML Engineering Student
+        </p>
       </div>
 
       {/* SCENE 3 */}

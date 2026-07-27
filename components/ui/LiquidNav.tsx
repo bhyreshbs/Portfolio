@@ -21,16 +21,41 @@ export default function LiquidNav() {
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
+
+      const sections = navItems
+        .map((item) => document.getElementById(item.href.substring(1)))
+        .filter((el): el is HTMLElement => el !== null);
+
+      let currentActive = "Home"; // Default
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const el = sections[i];
+        const rect = el.getBoundingClientRect();
+        
+        // If the top of the section is at or above the middle of the viewport
+        if (rect.top <= window.innerHeight * 0.5) {
+          const matchedItem = navItems.find((item) => item.href === `#${el.id}`);
+          if (matchedItem) {
+            currentActive = matchedItem.name;
+            break;
+          }
+        }
+      }
+      setActive(currentActive);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Check on mount
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   return (
     <motion.nav
       initial={{ x: 100, y: "-50%", opacity: 0 }}
       animate={{ x: 0, y: "-50%", opacity: 1 }}
-      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 3.6 }}
       className="fixed right-6 lg:right-10 top-1/2 z-50 flex items-center justify-center h-fit"
     >
       <div
@@ -54,13 +79,20 @@ export default function LiquidNav() {
                 key={item.name}
                 href={item.href}
                 onClick={() => setActive(item.name)}
-                className="group relative flex items-center justify-center p-2.5 rounded-full hover:bg-white/10 transition-colors duration-300"
+                className="group relative flex items-center justify-center p-3 rounded-full hover:bg-white/10 transition-colors duration-300"
               >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeNavIndicator"
+                    className="absolute inset-0 bg-white/20 rounded-full shadow-[0_0_15px_rgba(255,255,255,0.2)] backdrop-blur-md"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
                 <Icon 
                   strokeWidth={2} 
                   className={cn(
-                    "w-[22px] h-[22px] transition-all duration-300",
-                    isActive ? "text-white scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" : "text-white/70 group-hover:text-white"
+                    "relative z-10 w-[22px] h-[22px] transition-all duration-300",
+                    isActive ? "text-white scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" : "text-white/70 group-hover:text-white"
                   )} 
                 />
                 

@@ -2,10 +2,18 @@ import Scene from "@/components/webgl/Scene";
 import LiquidNav from "@/components/ui/LiquidNav";
 import CinematicHero from "@/components/hero/CinematicHero";
 import HorizontalShowcase from "@/components/projects/HorizontalShowcase";
+import Preloader from "@/components/ui/preloader/Preloader";
+import AboutSection from "@/components/about/AboutSection";
+import ExperienceControls from "@/components/hero/ExperienceControls";
+import SkillsUniverse from "@/components/skills/SkillsUniverse";
+import ContactSection from "@/components/contact/ContactSection";
 
 export default function Home() {
   return (
     <main className="relative bg-[#050505] overflow-x-hidden selection:bg-white/20 selection:text-white text-white">
+      {/* Initial Welcome Animation */}
+      <Preloader />
+
       {/* 3D Background Layer - Fixed to viewport */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Scene />
@@ -13,14 +21,13 @@ export default function Home() {
 
       {/* Foreground UI Layer */}
       <LiquidNav />
+      <ExperienceControls />
       
       {/* Scroll-Driven Cinematic Hero */}
       <CinematicHero />
 
       {/* About Section */}
-      <section id="about" className="relative z-10 min-h-screen flex items-center justify-center bg-black/80 backdrop-blur-sm border-t border-white/[0.05]">
-        <h2 className="text-4xl font-light text-white/40 tracking-widest uppercase">About (Next)</h2>
-      </section>
+      <AboutSection />
 
       {/* Projects Horizontal Scroll Section */}
       <div className="relative z-10">
@@ -28,14 +35,10 @@ export default function Home() {
       </div>
       
       {/* Skills Section */}
-      <section id="skills" className="relative z-10 min-h-screen flex items-center justify-center bg-[#050505] border-t border-white/[0.05]">
-        <h2 className="text-4xl font-light text-white/40 tracking-widest uppercase">Skills Universe</h2>
-      </section>
+      <SkillsUniverse />
       
       {/* Contact Section */}
-      <section id="contact" className="relative z-10 min-h-screen flex items-center justify-center bg-black border-t border-white/[0.05]">
-        <h2 className="text-4xl font-light text-white/40 tracking-widest uppercase">Contact</h2>
-      </section>
+      <ContactSection />
     </main>
   );
 }
