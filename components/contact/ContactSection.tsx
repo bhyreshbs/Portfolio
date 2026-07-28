@@ -12,17 +12,17 @@ import { Mail, FileText, ArrowUpRight, Activity, Terminal } from "lucide-react";
 gsap.registerPlugin(ScrollTrigger);
 
 const SOCIAL_LINKS = [
-  { name: "Twitter / X", icon: <SiX className="w-5 h-5" />, href: "#" },
+  { name: "Twitter / X", icon: <SiX className="w-5 h-5" />, href: "https://x.com/bhyreshbs" },
   { name: "Instagram", icon: <SiInstagram className="w-5 h-5" />, href: "#" },
-  { name: "LinkedIn", icon: <FaLinkedin className="w-5 h-5" />, href: "#" },
-  { name: "GitHub", icon: <SiGithub className="w-5 h-5" />, href: "#" },
+  { name: "LinkedIn", icon: <FaLinkedin className="w-5 h-5" />, href: "https://www.linkedin.com/in/bhyresh-bs-1a1000380/" },
+  { name: "GitHub", icon: <SiGithub className="w-5 h-5" />, href: "https://github.com/bhyreshbs" },
 ];
 
 const CHANNELS = [
-  { id: "email", name: "Email", desc: "Best for project discussions", icon: <Mail className="w-5 h-5" />, href: "mailto:bhycoder926@gmail.com" },
-  { id: "linkedin", name: "LinkedIn", desc: "Professional networking", icon: <FaLinkedin className="w-5 h-5" />, href: "#" },
-  { id: "github", name: "GitHub", desc: "Explore my work", icon: <SiGithub className="w-5 h-5" />, href: "#" },
-  { id: "resume", name: "Resume", desc: "Download CV", icon: <FileText className="w-5 h-5" />, href: "#" },
+  { id: "email", name: "Email", desc: "Best for project discussions", icon: <Mail className="w-5 h-5" />, href: "https://mail.google.com/mail/?view=cm&fs=1&to=bhyreshbs926@gmail.com" },
+  { id: "linkedin", name: "LinkedIn", desc: "Professional networking", icon: <FaLinkedin className="w-5 h-5" />, href: "https://www.linkedin.com/in/bhyresh-bs-1a1000380/" },
+  { id: "github", name: "GitHub", desc: "Explore my work", icon: <SiGithub className="w-5 h-5" />, href: "https://github.com/bhyreshbs" },
+  { id: "resume", name: "Resume", desc: "Download CV", icon: <FileText className="w-5 h-5" />, href: "/resume.pdf" },
 ];
 
 export default function ContactSection() {
@@ -78,7 +78,7 @@ export default function ContactSection() {
       
       // Navigate after connection visually establishes
       setTimeout(() => {
-        window.open(href, id === 'email' ? '_self' : '_blank');
+        window.open(href, '_blank');
         
         // Reset state after navigation
         setTimeout(() => {
