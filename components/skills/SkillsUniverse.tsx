@@ -77,64 +77,63 @@ export default function SkillsUniverse() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: "top top",
-        end: "+=4000", // Long scroll for sequential pacing
+        end: "+=2500", // Scroll distance required to complete animation
         pin: true,
-        scrub: 1,
+        scrub: 1.5,
       }
     });
 
     // 1. Title Fade In & Out
-    tl.from(titleRef.current, { opacity: 0, scale: 0.8, filter: "blur(20px)", duration: 1 })
-      .to(titleRef.current, { opacity: 0, y: -50, filter: "blur(10px)", duration: 1 }, "+=0.5");
+    tl.fromTo(titleRef.current, 
+      { opacity: 0, scale: 0.8, filter: "blur(20px)" },
+      { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.2, ease: "power2.out" }
+    ).to(titleRef.current, 
+      { opacity: 0, y: -50, filter: "blur(10px)", duration: 0.8, ease: "power2.in" }, 
+      "+=0.2"
+    );
 
-    // Setup capsules and orchestrate their sequential reveal
+    tl.addLabel("dropPhase", "-=0.2");
+
+    // Setup capsules and orchestrate their sequential auto-play reveal
     capsulesRef.current.forEach((capsule, index) => {
       if (!capsule) return;
 
       const innerContent = capsule.querySelector('.capsule-content');
       const icons = capsule.querySelectorAll('.skill-chip-wrapper');
 
-      // Calculate distance to center
-      const rect = capsule.getBoundingClientRect();
-      const centerX = window.innerWidth / 2 - (rect.left + rect.width / 2);
-
-      // Initial state: Hidden above screen, positioned at center X, height 0
-      gsap.set(capsule, { y: -window.innerHeight, x: centerX, opacity: 0 });
+      // Initial state: Hidden above screen, height 0
+      gsap.set(capsule, { y: -window.innerHeight, opacity: 0 });
       gsap.set(innerContent, { height: 0, opacity: 0 });
       gsap.set(icons, { opacity: 0, scale: 0.5, y: 20 });
 
-      // Drop into center
+      // All capsules start dropping exactly at the same time
+      const startTime = "dropPhase";
+
+      // Drop down automatically into flex position
       tl.to(capsule, {
         y: 0,
         opacity: 1,
-        duration: 1.5,
+        duration: 1.2,
         ease: "back.out(1.2)"
-      }, index === 0 ? "-=0.5" : "+=0.2");
+      }, startTime);
 
       // Unfold (expand height)
       tl.to(innerContent, {
         height: "auto",
         opacity: 1,
-        duration: 1,
+        duration: 0.8,
         ease: "power3.inOut"
-      });
+      }, `${startTime}+=0.5`);
 
       // Stagger icons in
       tl.to(icons, {
         opacity: 1,
         scale: 1,
         y: 0,
-        stagger: 0.1,
-        duration: 0.8,
+        stagger: 0.05,
+        duration: 0.6,
         ease: "back.out(1.5)"
-      });
-
-      // Slide to natural flex position
-      tl.to(capsule, {
-        x: 0,
-        duration: 1.2,
-        ease: "power3.inOut"
-      }, "+=0.5");
+      }, `${startTime}+=0.9`);
     });
 
   }, { scope: containerRef });
@@ -143,7 +142,7 @@ export default function SkillsUniverse() {
     <section
       id="skills"
       ref={containerRef}
-      className="relative h-screen w-full bg-[#050505] overflow-hidden flex items-center justify-center border-t border-white/[0.05]"
+      className="relative min-h-screen w-full bg-black/40 backdrop-blur-[40px] overflow-hidden flex items-center justify-center pt-20 pb-32"
     >
       {/* Background Lighting */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none"></div>

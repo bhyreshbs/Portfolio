@@ -2,8 +2,6 @@
 
 import { motion } from "framer-motion";
 import { cn } from "@/utils/cn";
-import { soundEngine } from "@/utils/audio";
-
 interface SkillChipProps {
   name: string;
   icon: React.ReactNode;
@@ -15,18 +13,16 @@ export default function SkillChip({ name, icon, delay = 0 }: SkillChipProps) {
   const floatAnimation = {
     y: ["-2%", "2%"],
     transition: {
-      duration: 2 + Math.random() * 2, // Randomize slightly so they don't sync up perfectly
+      duration: 2 + Math.random() * 2,
       repeat: Infinity,
       repeatType: "reverse" as const,
-      ease: "easeInOut",
+      ease: "easeInOut" as const,
       delay: Math.random() * 2,
     },
   };
 
   const handleHover = () => {
-    if (soundEngine?.enabled) {
-      soundEngine.playTick();
-    }
+    // hover logic
   };
 
   return (

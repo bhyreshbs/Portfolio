@@ -5,6 +5,10 @@ import { Environment, Lightformer } from "@react-three/drei";
 import { EffectComposer, Bloom, ChromaticAberration, Noise } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import FloatingGlassBlobs from "./FloatingGlassBlobs";
+import FluidSimulation from "./FluidSimulation";
+import GridBackground from "./GridBackground";
+import FluidParticles from "./FluidParticles";
+import { FluidRefractionEffect } from "./FluidRefractionEffect";
 import * as THREE from "three";
 
 export default function Scene() {
@@ -20,10 +24,17 @@ export default function Scene() {
         <ambientLight intensity={0.5} />
         <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} />
         
+        {/* Fluid Interaction Simulator (Invisible computation) */}
+        <FluidSimulation />
+
+        {/* WebGL Background Grid (so it can be refracted) */}
+        <GridBackground />
+
+        {/* Ambient Fluid Particles */}
+        <FluidParticles count={3000} />
+
         {/* Floating Liquid Glass Objects */}
         <FloatingGlassBlobs />
-
-        {/* Cinematic Lighting Environment */}
         <Environment resolution={256}>
           <group rotation={[-Math.PI / 3, 0, 1]}>
             <Lightformer form="circle" intensity={4} rotation-x={Math.PI / 2} position={[0, 5, -9]} scale={2} color="#ffffff" />
@@ -33,8 +44,11 @@ export default function Scene() {
           </group>
         </Environment>
 
-        {/* Post Processing for Cinematic Look */}
-        <EffectComposer disableNormalPass>
+        {/* Post Processing for Cinematic Look & Fluid Refraction */}
+        <EffectComposer>
+          {/* Custom Fluid Refraction Pass */}
+          <FluidRefractionEffect refractionStrength={0.2} />
+          
           <Bloom 
             luminanceThreshold={0.5} 
             mipmapBlur 

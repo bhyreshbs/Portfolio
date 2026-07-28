@@ -12,8 +12,17 @@ export default function Preloader() {
   useGSAP(() => {
     if (!containerRef.current) return;
 
+    // Fast-path bypass if already visited in this session
+    if (sessionStorage.getItem("hasVisited")) {
+      setIsComplete(true);
+      return;
+    }
+
     const tl = gsap.timeline({
-      onComplete: () => setIsComplete(true),
+      onComplete: () => {
+        sessionStorage.setItem("hasVisited", "true");
+        setIsComplete(true);
+      },
     });
 
     // Initial delay for realism

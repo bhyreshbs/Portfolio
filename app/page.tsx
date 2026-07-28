@@ -6,11 +6,14 @@ import Preloader from "@/components/ui/preloader/Preloader";
 import AboutSection from "@/components/about/AboutSection";
 import ExperienceControls from "@/components/hero/ExperienceControls";
 import SkillsUniverse from "@/components/skills/SkillsUniverse";
-import ContactSection from "@/components/contact/ContactSection";
+import ScrollRestorer from "@/components/utils/ScrollRestorer";
 
 export default function Home() {
   return (
     <main className="relative bg-[#050505] overflow-x-hidden selection:bg-white/20 selection:text-white text-white">
+      {/* Handles scroll restoration after returning from another route */}
+      <ScrollRestorer />
+
       {/* Initial Welcome Animation */}
       <Preloader />
 
@@ -22,23 +25,20 @@ export default function Home() {
       {/* Foreground UI Layer */}
       <LiquidNav />
       <ExperienceControls />
-      
+
       {/* Scroll-Driven Cinematic Hero */}
       <CinematicHero />
 
       {/* About Section */}
       <AboutSection />
 
+      {/* Skills Section */}
+      <SkillsUniverse />
+
       {/* Projects Horizontal Scroll Section */}
       <div className="relative z-10">
         <HorizontalShowcase />
       </div>
-      
-      {/* Skills Section */}
-      <SkillsUniverse />
-      
-      {/* Contact Section */}
-      <ContactSection />
     </main>
   );
 }
