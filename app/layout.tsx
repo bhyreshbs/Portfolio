@@ -15,8 +15,11 @@ const geistMono = Geist_Mono({
 import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
 
 export const metadata: Metadata = {
-  title: "Cinematic Portfolio",
-  description: "An unforgettable cinematic digital experience.",
+  title: "Bhyresh BS | AI & ML Engineer",
+  description: "Portfolio of Bhyresh BS - AI & Machine Learning Engineer",
+  icons: {
+    icon: "/media/logo.png",
+  },
 };
 
 export default function RootLayout({
