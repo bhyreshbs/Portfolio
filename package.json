@@ -28,14 +28,14 @@
     "shader-park-core": "^0.2.8",
     "split-type": "^0.3.4",
     "tailwind-merge": "^3.6.0",
-    "three": "^0.185.1",
+    "three": "^0.184.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/three": "^0.185.1",
+    "@types/three": "^0.184.0",
     "autoprefixer": "^10.5.4",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",

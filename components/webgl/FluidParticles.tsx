@@ -21,9 +21,8 @@ const particleVertexShader = `
     pos.x += sin(uTime * 0.2 + randomOffset) * 0.5;
     pos.y += cos(uTime * 0.2 + randomOffset) * 0.5;
 
-    // Fluid interaction
-    // We map world position to screen UV to read from fluid texture
-    vec4 clipPos = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(pos, 1.0);
+    // Map world position to clip-space UV to sample fluid texture
+    vec4 clipPos = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
     vec2 screenUV = (clipPos.xy / clipPos.w) * 0.5 + 0.5;
     
     float fluidHeight = 0.0;
@@ -32,24 +31,22 @@ const particleVertexShader = `
     if (screenUV.x >= 0.0 && screenUV.x <= 1.0 && screenUV.y >= 0.0 && screenUV.y <= 1.0) {
       fluidHeight = texture2D(tFluid, screenUV).r;
       
-      // Calculate simple gradient for lateral push
       float hx = texture2D(tFluid, screenUV + vec2(0.01, 0.0)).r;
       float hy = texture2D(tFluid, screenUV + vec2(0.0, 0.01)).r;
       fluidGradient = vec2(hx - fluidHeight, hy - fluidHeight);
     }
 
     // Apply displacement
-    pos.z += fluidHeight * 2.0; // Lift up
-    pos.x -= fluidGradient.x * 20.0; // Push away from ripple peaks
+    pos.z += fluidHeight * 2.0;
+    pos.x -= fluidGradient.x * 20.0;
     pos.y -= fluidGradient.y * 20.0;
     
     // Twinkle effect
     vAlpha = (sin(uTime * 2.0 + randomOffset) * 0.5 + 0.5) * 0.6;
-    
-    // Glow brighter if pushed by fluid
     vAlpha += abs(fluidHeight) * 2.0;
     
-    vec4 mvPosition = modelViewMatrix * instanceMatrix * vec4(pos, 1.0);
+    // Final position — use modelViewMatrix on pos directly (Points, not InstancedMesh)
+    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
     gl_Position = projectionMatrix * mvPosition;
     
     // Size attenuation

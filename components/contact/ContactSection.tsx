@@ -48,6 +48,7 @@ export default function ContactSection() {
       start: "top 80%",
       once: true,
       onEnter: () => {
+        if (!containerRef.current) return;
         setStartupComplete(true);
         
         // Aesthetic entry transition from the black screen

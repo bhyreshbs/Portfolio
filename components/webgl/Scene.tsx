@@ -11,6 +11,17 @@ import FluidParticles from "./FluidParticles";
 import { FluidRefractionEffect } from "./FluidRefractionEffect";
 import * as THREE from "three";
 
+// Suppress known harmless Three.js / HLSL compiler warnings in the browser console
+if (typeof console !== "undefined") {
+  const originalWarn = console.warn;
+  console.warn = (...args: any[]) => {
+    if (args[0] && typeof args[0] === 'string' && args[0].includes("THREE.WebGLProgram: Program Info Log") && args[0].includes("cannot be represented accurately in double precision")) {
+      return;
+    }
+    originalWarn.apply(console, args);
+  };
+}
+
 export default function Scene() {
   return (
     <div className="fixed inset-0 z-0 pointer-events-auto">
