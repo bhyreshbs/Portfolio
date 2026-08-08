@@ -149,7 +149,7 @@ export default function CinematicHero() {
       <div className="fixed top-[calc(50%+180px)] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] pointer-events-auto">
         <div className="hero-photo opacity-0 w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden border border-white/[0.05] shadow-[0_0_50px_-10px_rgba(6,182,212,0.15)] relative">
           <SecureImage
-            src="/media/profile.jpeg"
+            src="/media/profile.webp"
             alt="Profile"
             className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
           />
@@ -248,13 +248,13 @@ export default function CinematicHero() {
                   onClick={scrollToAbout}
                   className="group flex flex-col items-center gap-4 cursor-pointer outline-none border-none bg-transparent"
                 >
-                  <span 
+                  <span
                     className="text-xs font-mono uppercase tracking-[0.3em] text-white/90 group-hover:text-white group-hover:tracking-[0.4em] transition-all duration-500"
                     style={{ textShadow: "0px 2px 10px rgba(0,0,0,1), 0px 4px 20px rgba(0,0,0,0.8)" }}
                   >
                     Begin Journey
                   </span>
-                  
+
                   {/* Vertical indicator instead of a button container */}
                   <div className="w-[1px] h-8 bg-gradient-to-b from-white/60 to-transparent group-hover:h-12 group-hover:from-cyan-400 transition-all duration-500"></div>
                 </button>

@@ -14,7 +14,7 @@ gsap.registerPlugin(ScrollTrigger);
 const SOCIAL_LINKS = [
   { name: "Twitter / X", icon: <SiX className="w-5 h-5" />, href: "https://x.com/bhyreshbs" },
   { name: "Instagram", icon: <SiInstagram className="w-5 h-5" />, href: "#" },
-  { name: "LinkedIn", icon: <FaLinkedin className="w-5 h-5" />, href: "https://www.linkedin.com/in/bhyresh-bs-1a1000380/" },
+  { name: "LinkedIn", icon: <FaLinkedin className="w-5 h-5" />, href: "https://www.linkedin.com/in/bhyreshbs/" },
   { name: "GitHub", icon: <SiGithub className="w-5 h-5" />, href: "https://github.com/bhyreshbs" },
 ];
 
@@ -31,7 +31,7 @@ export default function ContactSection() {
   const [clickedChannel, setClickedChannel] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionEstablished, setConnectionEstablished] = useState(false);
-  
+
   // Cinematic Boot Sequence States
   const [hasTriggeredBoot, setHasTriggeredBoot] = useState(false);
   const [showSystemMessage, setShowSystemMessage] = useState(false);
@@ -50,9 +50,9 @@ export default function ContactSection() {
       onEnter: () => {
         if (!containerRef.current) return;
         setStartupComplete(true);
-        
+
         // Aesthetic entry transition from the black screen
-        gsap.fromTo(containerRef.current.querySelectorAll('.cinematic-fade'), 
+        gsap.fromTo(containerRef.current.querySelectorAll('.cinematic-fade'),
           { y: 40, opacity: 0, filter: "blur(10px)" },
           {
             y: 0,
@@ -76,11 +76,11 @@ export default function ContactSection() {
     // Simulate establishing connection
     setTimeout(() => {
       setConnectionEstablished(true);
-      
+
       // Navigate after connection visually establishes
       setTimeout(() => {
         window.open(href, '_blank');
-        
+
         // Reset state after navigation
         setTimeout(() => {
           setIsConnecting(false);
@@ -92,8 +92,8 @@ export default function ContactSection() {
   };
 
   return (
-    <section 
-      id="contact" 
+    <section
+      id="contact"
       ref={containerRef}
       className="relative min-h-screen w-full flex flex-col items-center justify-between bg-[#050505] overflow-hidden border-t border-white/[0.05]"
     >
@@ -107,7 +107,7 @@ export default function ContactSection() {
 
       {/* Main Content Area */}
       <div className="flex-grow flex flex-col items-center justify-center w-full px-4 md:px-10 z-10 py-24">
-        
+
         {/* Cinematic Headline */}
         <div className="cinematic-fade mb-16 md:mb-24 text-center flex flex-col items-center">
           <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-md mb-8">
@@ -124,14 +124,14 @@ export default function ContactSection() {
 
         {/* Interactive Terminal Interface */}
         <div className="cinematic-fade flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-24 w-full max-w-6xl">
-          
+
           {/* Left Channels */}
           <div className="flex flex-col gap-6 w-full max-w-xs order-2 lg:order-1">
             {CHANNELS.slice(0, 2).map((channel) => (
-              <ChannelCard 
-                key={channel.id} 
-                channel={channel} 
-                hoveredChannel={hoveredChannel} 
+              <ChannelCard
+                key={channel.id}
+                channel={channel}
+                hoveredChannel={hoveredChannel}
                 setHoveredChannel={setHoveredChannel}
                 clickedChannel={clickedChannel}
                 isConnecting={isConnecting}
@@ -149,13 +149,13 @@ export default function ContactSection() {
               hoveredChannel ? "opacity-100 scale-110" : "opacity-40 scale-100",
               isConnecting ? "opacity-100 scale-[2] blur-3xl from-cyan-400/20 to-cyan-500/20" : ""
             )}></div>
-            
+
             {/* Liquid Glass Orb */}
             <div className={cn(
               "liquid-blob absolute w-full h-full bg-white/[0.02] backdrop-blur-2xl border border-white/10 shadow-[inset_0_0_60px_rgba(255,255,255,0.05)] transition-all duration-700",
               isConnecting ? "border-cyan-500/50 bg-cyan-500/10 shadow-[0_0_100px_rgba(6,182,212,0.3)]" : (hoveredChannel ? "border-white/30" : "")
             )}></div>
-            
+
             {/* Inner Rotating Ring */}
             <div className={cn(
               "liquid-blob-2 absolute w-[85%] h-[85%] bg-transparent border border-white/5 transition-all duration-700",
@@ -165,7 +165,7 @@ export default function ContactSection() {
             {/* Core Icon/Activity */}
             <div className="relative z-10 flex items-center justify-center">
               <Activity className={cn(
-                "w-10 h-10 transition-all duration-500", 
+                "w-10 h-10 transition-all duration-500",
                 isConnecting ? "text-cyan-400 animate-pulse scale-125" : (hoveredChannel ? "text-white" : "text-white/30")
               )} />
             </div>
@@ -182,10 +182,10 @@ export default function ContactSection() {
           {/* Right Channels */}
           <div className="flex flex-col gap-6 w-full max-w-xs order-3">
             {CHANNELS.slice(2, 4).map((channel) => (
-              <ChannelCard 
-                key={channel.id} 
-                channel={channel} 
-                hoveredChannel={hoveredChannel} 
+              <ChannelCard
+                key={channel.id}
+                channel={channel}
+                hoveredChannel={hoveredChannel}
                 setHoveredChannel={setHoveredChannel}
                 clickedChannel={clickedChannel}
                 isConnecting={isConnecting}
@@ -200,7 +200,7 @@ export default function ContactSection() {
 
       {/* Elegant Footer / System Status */}
       <footer className="w-full relative z-10">
-        
+
         {/* End of Transmission Note */}
         <div className="w-full flex justify-center pb-16">
           <div className="cinematic-fade flex items-center gap-4 text-white/30 font-mono text-xs uppercase tracking-[0.3em]">
@@ -212,7 +212,7 @@ export default function ContactSection() {
 
         <div className="border-t border-white/5 bg-black/40 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-6 md:px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            
+
             <div className="flex items-center gap-2 text-white/30 font-light text-xs tracking-widest uppercase">
               <span>&copy; {new Date().getFullYear()}</span>
               <span className="w-1 h-1 rounded-full bg-white/10"></span>
@@ -265,41 +265,41 @@ export default function ContactSection() {
 }
 
 // Subcomponent for the interactive channel capsules
-function ChannelCard({ 
-  channel, 
-  hoveredChannel, 
-  setHoveredChannel, 
-  clickedChannel, 
+function ChannelCard({
+  channel,
+  hoveredChannel,
+  setHoveredChannel,
+  clickedChannel,
   isConnecting,
   startupComplete,
-  onConnect 
-}: { 
-  channel: any, 
-  hoveredChannel: string | null, 
+  onConnect
+}: {
+  channel: any,
+  hoveredChannel: string | null,
   setHoveredChannel: (id: string | null) => void,
   clickedChannel: string | null,
   isConnecting: boolean,
   startupComplete: boolean,
   onConnect: () => void
 }) {
-  
+
   const isHovered = hoveredChannel === channel.id;
   const isOthersHovered = hoveredChannel && !isHovered;
   const isClicked = clickedChannel === channel.id;
 
   return (
-    <div 
+    <div
       onClick={onConnect}
       onMouseEnter={() => startupComplete && setHoveredChannel(channel.id)}
       onMouseLeave={() => startupComplete && setHoveredChannel(null)}
       className={cn(
         "relative group w-full p-5 rounded-3xl cursor-pointer transition-all duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] overflow-hidden",
         "bg-white/[0.015] border border-white/[0.08] backdrop-blur-md",
-        
+
         // Hover effects
         isHovered ? "bg-white/[0.05] border-white/30 shadow-[0_20px_40px_-10px_rgba(255,255,255,0.05)] translate-y-[-4px]" : "",
         isOthersHovered ? "opacity-30 scale-[0.98] blur-[1px]" : "opacity-100 scale-100",
-        
+
         // Click/Connecting effects
         isConnecting && !isClicked ? "opacity-0 translate-y-4 pointer-events-none" : "",
         isClicked ? "bg-cyan-500/20 border-cyan-400/50 shadow-[0_0_60px_rgba(6,182,212,0.3)] scale-[1.02]" : ""
@@ -319,7 +319,7 @@ function ChannelCard({
       )}></div>
 
       <div className="relative z-10 flex items-center justify-between gap-4" style={{ transform: isHovered ? "translateZ(20px)" : "translateZ(0px)", transition: "transform 0.5s ease" }}>
-        
+
         <div className="flex items-center gap-5">
           <div className={cn(
             "p-3.5 rounded-full bg-white/5 border border-white/10 transition-all duration-500",
