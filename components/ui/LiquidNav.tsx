@@ -1,153 +1,302 @@
 "use client";
 
-import { motion } from "framer-motion";
-import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import {
+  motion,
+  useAnimationControls,
+  useMotionValueEvent,
+  useScroll,
+  type Variants,
+} from "framer-motion";
+import { useTheme } from "next-themes";
 import { cn } from "@/utils/cn";
-import { useEffect, useState } from "react";
-import { User, Briefcase, Code2, Mail, Home } from "lucide-react";
+import { useLowEnd } from "@/utils/lowEnd";
+import ThemeToggle from "@/components/ui/ThemeToggle";
+import SecureImage from "@/components/ui/secure-image/SecureImage";
 
-const navItems = [
-  { name: "Home", href: "/#hero", icon: Home },
-  { name: "Beyond Code", href: "/#about", icon: User },
-  { name: "Technologies", href: "/#skills", icon: Code2 },
-  { name: "Work", href: "/#projects", icon: Briefcase },
+const NAV_ITEMS = [
+  { name: "Intro", id: "hero" },
+  { name: "About", id: "about" },
+  { name: "Skills", id: "skills" },
+  { name: "Work", id: "projects" },
 ];
+const CONTACT_ID = "contact"; // the footer
+const SECTION_IDS = [...NAV_ITEMS.map((i) => i.id), CONTACT_ID];
 
+function scrollToId(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY, behavior: "smooth" });
+}
+
+/**
+ * Theme-switch choreography. Every navbar element flips edge-on in sequence ("out"),
+ * the theme changes while they're invisible, then they spring back in ("in") in the
+ * new palette while a ripple expands from the toggle.
+ */
+const swap: Variants = {
+  out: (i: number) => ({
+    rotateX: 90,
+    opacity: 0,
+    y: -8,
+    scale: 0.9,
+    transition: { duration: 0.18, delay: i * 0.035, ease: "easeIn" },
+  }),
+  in: (i: number) => ({
+    rotateX: 0,
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 380, damping: 17, delay: i * 0.05 },
+  }),
+};
+const pill: Variants = {
+  out: { scale: 0.97, transition: { duration: 0.35, ease: "easeIn" } },
+  in: { scale: 1, transition: { type: "spring", stiffness: 300, damping: 16 } },
+};
+
+type SwapProps = React.ComponentProps<typeof motion.div> & {
+  controls: ReturnType<typeof useAnimationControls>;
+  order: number;
+};
+function Swap({ controls, order, style, ...rest }: SwapProps) {
+  return (
+    <motion.div
+      variants={swap}
+      custom={order}
+      animate={controls}
+      style={{ transformPerspective: 700, ...style }}
+      {...rest}
+    />
+  );
+}
+
+/**
+ * Floating glass dock. It deliberately uses the opposite palette of the page
+ * (`nav-invert`): light glass in dark mode, dark glass in light mode.
+ *
+ * Brand area: while the hero is on screen the logo tile is just a "B" and the name
+ * label is hidden. After you scroll past the hero the tile swaps to the profile
+ * photo and the name slides in; scrolling back reverses it.
+ */
 export default function LiquidNav() {
-  const [scrolled, setScrolled] = useState(false);
-  const [active, setActive] = useState("Home");
-  const [mounted, setMounted] = useState(false);
-  const [initialDelay, setInitialDelay] = useState(8.0);
+  const [active, setActive] = useState("hero");
+  const [delay, setDelay] = useState(2.5);
+  // Hand-off from the hero: the photo lands first (~0.1 screen of scroll), then the name (~0.22)
+  const [pastHero, setPastHero] = useState(false); // photo has landed
+  const [nameIn, setNameIn] = useState(false); // name has landed
+  const [burst, setBurst] = useState<{ key: number; x: number; y: number } | null>(null);
+
+  const { resolvedTheme, setTheme } = useTheme();
+  const lowEnd = useLowEnd();
+  const controls = useAnimationControls();
+  const dockRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const busy = useRef(false);
+
+  const { scrollY } = useScroll();
+  // Thresholds follow the hero's 80vh pin: the photo has left by ~0.18 of a screen, the
+  // last letter by ~0.5
+  useMotionValueEvent(scrollY, "change", (y) => {
+    setPastHero(y > window.innerHeight * 0.1);
+    setNameIn(y > window.innerHeight * 0.48);
+  });
 
   useEffect(() => {
-    setMounted(true);
-    
-    if (sessionStorage.getItem("hasVisited")) {
-      setInitialDelay(0);
-    }
-    
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+    setPastHero(window.scrollY > window.innerHeight * 0.1);
+    setNameIn(window.scrollY > window.innerHeight * 0.48);
+    if (sessionStorage.getItem("hasVisited")) setDelay(0.1);
 
-      const sections = navItems
-        .map((item) => document.getElementById(item.href.substring(2)))
-        .filter((el): el is HTMLElement => el !== null);
-
-      let currentActive = "Home"; // Default
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const el = sections[i];
-        const rect = el.getBoundingClientRect();
-
-        // If the top of the section is at or above the middle of the viewport
-        if (rect.top <= window.innerHeight * 0.5) {
-          const matchedItem = navItems.find((item) => item.href === `/#${el.id}`);
-          if (matchedItem) {
-            currentActive = matchedItem.name;
-            break;
-          }
-        }
-      }
-      setActive(currentActive);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // Check on mount
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) if (entry.isIntersecting) setActive(entry.target.id);
+      },
+      // A thin band at the vertical middle of the viewport: one section at a time
+      { rootMargin: "-49% 0px -50% 0px" }
+    );
+    SECTION_IDS.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
   }, []);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, name: string) => {
-    const isLocalPage = window.location.pathname === "/";
-
-    // Only smooth scroll if we are already on the home page
-    if (isLocalPage) {
-      e.preventDefault();
-      setActive(name);
-
-      const targetId = href.substring(2);
-      const element = document.getElementById(targetId);
-
-      if (element) {
-        const offsetTop = element.getBoundingClientRect().top + window.scrollY;
-        window.scrollTo({
-          top: offsetTop,
-          behavior: 'smooth'
-        });
-      }
-    }
+  const go = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    setActive(id);
+    scrollToId(id);
   };
 
-  if (!mounted) return null; // Avoid hydration mismatch for motion delay
+  const toggleTheme = async () => {
+    if (busy.current) return;
+    const next = resolvedTheme === "light" ? "dark" : "light";
+    if (lowEnd) {
+      setTheme(next);
+      return;
+    }
+    busy.current = true;
+    await controls.start("out");
+    setTheme(next); // palette swaps while every element is edge-on
+    const t = toggleRef.current?.getBoundingClientRect();
+    const d = dockRef.current?.getBoundingClientRect();
+    if (t && d) setBurst({ key: Date.now(), x: t.left - d.left + t.width / 2, y: t.top - d.top + t.height / 2 });
+    await controls.start("in");
+    busy.current = false;
+  };
 
   return (
     <motion.nav
-      initial={{ x: 100, y: "-50%", opacity: 0 }}
-      animate={{ x: 0, y: "-50%", opacity: 1 }}
-      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: initialDelay }}
-      className={cn(
-        "fixed right-6 lg:right-10 top-1/2 z-[100] flex items-center justify-center h-fit group/nav transition-opacity duration-500",
-        mounted ? "opacity-100" : "opacity-0"
-      )}
+      aria-label="Sections"
+      initial={{ y: -48, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay }}
+      // max(): sit below a phone notch / status bar in landscape and PWA modes
+      className="fixed top-[max(1rem,env(safe-area-inset-top))] inset-x-0 z-[100] flex justify-center px-3 pointer-events-none"
     >
-      {/* Outer ambient glow */}
-      <div className={cn(
-        "absolute inset-0 bg-cyan-500/20 blur-3xl rounded-full transition-opacity duration-1000",
-        scrolled ? "opacity-30" : "opacity-0"
-      )}></div>
-
-      <div
-        className={cn(
-          "relative flex flex-col items-center justify-between gap-6 px-3.5 py-6 rounded-full transition-all duration-700 ease-out overflow-visible",
-          "border border-white/[0.15] shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]",
-          scrolled ? "bg-black/60 backdrop-blur-[40px]" : "bg-black/30 backdrop-blur-3xl"
-        )}
+      <motion.div
+        ref={dockRef}
+        variants={pill}
+        animate={controls}
+        className="nav-invert pointer-events-auto relative flex w-full max-w-3xl items-center justify-between gap-1 rounded-full border border-white/10 bg-canvas/80 py-2 pl-2.5 pr-2 max-[380px]:pl-2 max-[380px]:pr-1.5 shadow-[0_10px_40px_-12px_rgba(0,0,0,0.45)] backdrop-blur-xl"
       >
-        {/* Inner Glass Highlights */}
-        <div className="absolute inset-0 rounded-full border border-white/[0.1] pointer-events-none mix-blend-overlay overflow-hidden shadow-[inset_0_0_20px_rgba(255,255,255,0.05)]"></div>
-        <div className="absolute top-0 right-1/2 translate-x-1/2 w-[2px] h-1/2 bg-gradient-to-b from-transparent via-cyan-400/40 to-transparent blur-[2px]"></div>
+        {/* Ripple from the toggle, clipped to the pill */}
+        <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
+          {burst && (
+            <motion.span
+              key={burst.key}
+              initial={{ scale: 0, opacity: 0.9 }}
+              animate={{ scale: 16, opacity: 0 }}
+              transition={{ duration: 0.95, ease: "easeOut" }}
+              style={{ left: burst.x - 20, top: burst.y - 20 }}
+              className="absolute h-10 w-10 rounded-full border-2 border-white/70 bg-white/25"
+            />
+          )}
+        </span>
 
-        {/* Links */}
-        <div className="relative z-10 flex flex-col items-center gap-6">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = active === item.name;
-            return (
-              <a
-                key={item.name}
-                href={item.href}
-                onClick={(e) => handleNavClick(e, item.href, item.name)}
-                className="group relative flex items-center justify-center p-3 rounded-full hover:bg-white/10 transition-colors duration-300 cursor-pointer"
+        {/* Brand */}
+        <Swap controls={controls} order={0}>
+          <a
+            href="/#hero"
+            onClick={(e) => go(e, "hero")}
+            className="flex items-center gap-2.5 rounded-full outline-none"
+            aria-label="Bhyresh BS — back to top"
+          >
+            <span className="relative h-9 w-9 shrink-0 max-[380px]:h-8 max-[380px]:w-8">
+              <motion.span
+                animate={{ opacity: pastHero ? 0 : 1, scale: pastHero ? 0.5 : 1, rotate: pastHero ? -25 : 0 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="absolute inset-0 flex items-center justify-center rounded-xl bg-white font-serif text-lg italic font-semibold text-canvas"
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="activeNavIndicator"
-                    className="absolute inset-0 bg-gradient-to-b from-cyan-500/20 to-blue-500/20 rounded-full shadow-[0_0_20px_rgba(0,255,255,0.3)] backdrop-blur-md border border-white/20"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <Icon
-                  strokeWidth={2}
-                  className={cn(
-                    "relative z-10 w-[22px] h-[22px] transition-all duration-300",
-                    isActive ? "text-white scale-110 drop-shadow-[0_0_10px_rgba(255,255,255,0.9)]" : "text-white/60 group-hover:text-white"
-                  )}
+                B
+              </motion.span>
+              <motion.span
+                animate={{ opacity: pastHero ? 1 : 0, scale: pastHero ? 1 : 0.4 }}
+                transition={{ type: "spring", stiffness: 320, damping: 20 }}
+                className="absolute inset-0 overflow-hidden rounded-full ring-2 ring-white/40"
+              >
+                <SecureImage src="/media/profile.webp" alt="" className="h-full w-full object-cover" />
+              </motion.span>
+              {pastHero && (
+                <motion.span
+                  aria-hidden
+                  initial={{ scale: 1, opacity: 0.7 }}
+                  animate={{ scale: 2, opacity: 0 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  className="pointer-events-none absolute inset-0 rounded-full border-2 border-white/60"
                 />
+              )}
+            </span>
 
-                {/* Tooltip */}
-                <div className="absolute right-full mr-6 top-1/2 -translate-y-1/2 px-5 py-2.5 rounded-2xl bg-black/80 backdrop-blur-2xl border border-white/10 opacity-0 -translate-x-4 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-400 ease-out flex items-center shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-                  <span className="text-[13px] font-bold text-white tracking-[0.1em] whitespace-nowrap uppercase">
+            {/* Name: lands letter by letter once the hero's name has left (transform/opacity only) */}
+            <span
+              aria-label="Bhyresh BS"
+              className="relative hidden whitespace-pre text-sm font-semibold tracking-wide text-white sm:flex"
+            >
+              {"Bhyresh BS".split("").map((ch, i) => (
+                <motion.span
+                  key={i}
+                  aria-hidden
+                  initial={false}
+                  animate={
+                    nameIn
+                      ? { opacity: 1, y: 0, scale: 1 }
+                      : { opacity: 0, y: -16, scale: 0.6 }
+                  }
+                  transition={
+                    nameIn
+                      ? { type: "spring", stiffness: 420, damping: 15, delay: i * 0.04 }
+                      : { duration: 0.2, delay: (9 - i) * 0.012 }
+                  }
+                  className="inline-block"
+                >
+                  {ch}
+                </motion.span>
+              ))}
+              {/* Underline that draws once as the name lands */}
+              {nameIn && (
+                <motion.span
+                  aria-hidden
+                  initial={{ scaleX: 0, opacity: 0.9 }}
+                  animate={{ scaleX: 1, opacity: 0 }}
+                  transition={{ scaleX: { duration: 0.6, delay: 0.15 }, opacity: { duration: 0.5, delay: 0.55 } }}
+                  style={{ originX: 0 }}
+                  className="absolute -bottom-1 left-0 h-px w-full bg-gradient-to-r from-white/0 via-white to-white/0"
+                />
+              )}
+            </span>
+          </a>
+        </Swap>
+
+        {/* Section links */}
+        <ul className="flex items-center gap-0.5 sm:gap-1">
+          {NAV_ITEMS.map((item, i) => {
+            const isActive = active === item.id;
+            return (
+              <li key={item.id} className="relative">
+                <Swap controls={controls} order={i + 1}>
+                  <a
+                    href={`/#${item.id}`}
+                    onClick={(e) => go(e, item.id)}
+                    className={cn(
+                      "relative block rounded-full px-2 py-2 text-[11px] font-medium outline-none transition-colors duration-300 max-[380px]:px-1.5 sm:px-4 sm:text-sm",
+                      isActive ? "text-white" : "text-white/55 hover:text-white"
+                    )}
+                  >
+                    {isActive && (
+                      <motion.span
+                        layoutId="dock-pill"
+                        transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                        className="absolute inset-0 -z-10 rounded-full border border-white/25 bg-white/15 shadow-[0_0_24px_rgb(var(--fg)/0.2)] backdrop-blur-md"
+                      />
+                    )}
                     {item.name}
-                  </span>
-                  {/* Tooltip pointer arrow */}
-                  <div className="absolute right-[-5px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-black/80 border-t border-r border-white/10 rotate-45 backdrop-blur-xl"></div>
-                </div>
-              </a>
+                  </a>
+                </Swap>
+              </li>
             );
           })}
-        </div>
-      </div>
+        </ul>
+
+        <Swap controls={controls} order={5}>
+          <ThemeToggle ref={toggleRef} onToggle={toggleTheme} />
+        </Swap>
+
+        {/* Scrolls to the footer's contact block */}
+        <Swap controls={controls} order={6}>
+          <a
+            href={`/#${CONTACT_ID}`}
+            onClick={(e) => go(e, CONTACT_ID)}
+            className={cn(
+              "block rounded-full bg-white px-4 py-2 text-[12px] font-semibold text-canvas outline-none transition-shadow duration-300 max-[380px]:px-3 sm:px-5 sm:text-sm",
+              active === CONTACT_ID
+                ? "shadow-[0_0_0_3px_rgb(var(--fg)/0.25),0_0_24px_rgb(var(--fg)/0.35)]"
+                : "hover:shadow-[0_0_20px_rgb(var(--fg)/0.3)]"
+            )}
+          >
+            Contact
+          </a>
+        </Swap>
+      </motion.div>
     </motion.nav>
   );
 }

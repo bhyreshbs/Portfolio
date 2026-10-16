@@ -2,13 +2,19 @@
 
 import { useEffect } from "react";
 import Lenis from "lenis";
+import { useLowEnd } from "@/utils/lowEnd";
 
 export default function SmoothScrollProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const lowEnd = useLowEnd();
+
   useEffect(() => {
+    // Low-end devices keep native scroll: lighter, no per-frame rAF overhead
+    if (lowEnd) return;
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -34,7 +40,7 @@ export default function SmoothScrollProvider({
       delete window.lenis;
       lenis.destroy();
     };
-  }, []);
+  }, [lowEnd]);
 
   return <>{children}</>;
 }

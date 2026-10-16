@@ -2,14 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* RGB triplets so Tailwind can apply alpha: rgb(var(--fg) / 0.6) */
 :root {
-  --background: #0a0a0a;
-  --foreground: #ffffff;
+  --fg: 255 255 255;
+  --shade: 0 0 0;
+  --bg: 5 5 5;
+}
+/* Light theme: a soft cool grey (not near-white) with deep ink, so text keeps strong contrast */
+.light {
+  --fg: 12 12 20;
+  --shade: 255 255 255;
+  --bg: 222 223 232;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: rgb(var(--bg));
+  color: rgb(var(--fg));
   overflow-x: hidden;
 }
 
@@ -32,4 +40,110 @@ html.lenis, html.lenis body {
 
 .lenis.lenis-smooth iframe {
   pointer-events: none;
+}
+
+/* ── Shared keyframes ── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+@keyframes aurora-drift {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  50% { transform: translate3d(6vw, -4vh, 0) rotate(12deg) scale(1.12); }
+  100% { transform: translate3d(-5vw, 5vh, 0) rotate(-8deg) scale(1.05); }
+}
+
+/* The navbar uses the opposite palette of the page: light glass on dark, dark glass on light */
+:root:not(.light) .nav-invert {
+  --fg: 12 12 20;
+  --shade: 255 255 255;
+  --bg: 238 238 244;
+}
+.light .nav-invert {
+  --fg: 255 255 255;
+  --shade: 0 0 0;
+  --bg: 12 12 16;
+}
+
+/*
+ * Light theme text strength. In dark mode a 40%-white label is plenty legible, but 40% ink on
+ * a light background is not, so light mode maps every faint text step to a stronger one
+ * (all at or above WCAG AA contrast on the light canvas).
+ */
+.light .text-white\/20 { color: rgb(var(--fg) / 0.5); }
+.light .text-white\/25 { color: rgb(var(--fg) / 0.54); }
+.light .text-white\/30 { color: rgb(var(--fg) / 0.58); }
+.light .text-white\/35 { color: rgb(var(--fg) / 0.62); }
+.light .text-white\/40 { color: rgb(var(--fg) / 0.66); }
+.light .text-white\/45 { color: rgb(var(--fg) / 0.7); }
+.light .text-white\/50 { color: rgb(var(--fg) / 0.74); }
+.light .text-white\/55 { color: rgb(var(--fg) / 0.78); }
+.light .text-white\/60 { color: rgb(var(--fg) / 0.82); }
+.light .text-white\/70 { color: rgb(var(--fg) / 0.88); }
+.light .text-white\/80 { color: rgb(var(--fg) / 0.92); }
+/* Hover states keep full strength */
+.light .hover\:text-white:hover { color: rgb(var(--fg) / 1); }
+.light .group:hover .group-hover\:text-white { color: rgb(var(--fg) / 1); }
+
+/*
+ * Light theme surfaces. Dark mode builds glass from faint WHITE layers (3–5%), which read as
+ * subtle lifted panels on near-black. The same percentages of dark ink on a bright pastel
+ * background are almost invisible, so light mode gets denser, darker tints and firmer borders.
+ */
+.light .bg-white\/\[0\.02\] { background-color: rgb(var(--fg) / 0.09); }
+.light .bg-white\/\[0\.03\] { background-color: rgb(var(--fg) / 0.15); }
+.light .bg-white\/\[0\.04\] { background-color: rgb(var(--fg) / 0.16); }
+.light .bg-white\/\[0\.05\] { background-color: rgb(var(--fg) / 0.18); }
+.light .bg-white\/5 { background-color: rgb(var(--fg) / 0.18); }
+.light .bg-white\/10 { background-color: rgb(var(--fg) / 0.22); }
+.light .bg-white\/15 { background-color: rgb(var(--fg) / 0.26); }
+.light .bg-white\/20 { background-color: rgb(var(--fg) / 0.3); }
+.light .border-white\/10 { border-color: rgb(var(--fg) / 0.17); }
+.light .border-white\/15 { border-color: rgb(var(--fg) / 0.22); }
+.light .border-white\/20 { border-color: rgb(var(--fg) / 0.27); }
+.light .border-white\/25 { border-color: rgb(var(--fg) / 0.32); }
+.light .border-white\/30 { border-color: rgb(var(--fg) / 0.36); }
+.light .border-white\/40 { border-color: rgb(var(--fg) / 0.45); }
+.light .bg-white\/25 { background-color: rgb(var(--fg) / 0.28); }
+.light .ring-white\/40 { --tw-ring-color: rgb(var(--fg) / 0.5); }
+/* Hover variants must out-rank the base mappings above */
+.light .hover\:bg-white\/10:hover { background-color: rgb(var(--fg) / 0.28); }
+.light .hover\:border-white\/30:hover { border-color: rgb(var(--fg) / 0.5); }
+.light .hover\:border-white\/40:hover { border-color: rgb(var(--fg) / 0.6); }
+.light .group:hover .group-hover\:border-white\/40 { border-color: rgb(var(--fg) / 0.6); }
+
+/* Soft drop shadows need a real dark colour in light mode (the "shade" token is white there) */
+:root { --shadow: 0 0 0; }
+.light { --shadow: 30 30 70; }
+
+/* Aurora strength per theme (read by AmbientBackground): saturated pastels in light mode */
+.light {
+  --orb-0: 0.2;
+  --orb-1: 0.18;
+  --orb-2: 0.15;
+  --orb-3: 0.12;
+  --orb-4: 0.13;
+}
+
+/*
+ * Performance tiers (set on <html data-tier> by utils/lowEnd.ts):
+ *   full → everything   |   mid → lighter blur   |   lite → no blur, no looping CSS animation
+ * backdrop-filter is the single most expensive thing a glass UI does on a weak GPU: every
+ * frame the browser re-blurs whatever moves behind it.
+ */
+html[data-tier="mid"] :is(.backdrop-blur-md, .backdrop-blur-xl, .backdrop-blur-2xl, .backdrop-blur-3xl) {
+  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(8px) !important;
+}
+html[data-tier="lite"] * {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  animation-play-state: paused !important; /* marquees, pings, spins: frozen */
+}
+/* Without blur, translucent glass needs to be more opaque to stay legible */
+html[data-tier="lite"] :is(.backdrop-blur-md, .backdrop-blur-xl, .backdrop-blur-2xl, .backdrop-blur-3xl) {
+  background-color: rgb(var(--bg) / 0.94) !important;
 }
