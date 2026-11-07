@@ -1,13 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import {
-  motion,
-  useAnimationControls,
-  useMotionValueEvent,
-  useScroll,
-  type Variants,
-} from "framer-motion";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { motion, useAnimationControls, type Variants } from "framer-motion";
+import Link from "next/link";
 import { useTheme } from "next-themes";
 import { cn } from "@/utils/cn";
 import { useLowEnd } from "@/utils/lowEnd";
@@ -28,6 +23,34 @@ function scrollToId(id: string) {
   if (!el) return;
   window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY, behavior: "smooth" });
 }
+
+// Scroll position as an external store: components re-render only when a derived flag flips.
+// The server snapshot is "top of the page", which matches the first client render.
+function subscribeScroll(onChange: () => void) {
+  window.addEventListener("scroll", onChange, { passive: true });
+  window.addEventListener("resize", onChange);
+  return () => {
+    window.removeEventListener("scroll", onChange);
+    window.removeEventListener("resize", onChange);
+  };
+}
+const atTop = () => false;
+
+// Whether this session already saw the intro. Read once per page load, so the Preloader
+// marking the visit partway through the first intro doesn't change the nav's entrance delay.
+let visitedAtLoad: boolean | undefined;
+function getVisited() {
+  if (visitedAtLoad === undefined) {
+    try {
+      visitedAtLoad = !!sessionStorage.getItem("hasVisited");
+    } catch {
+      visitedAtLoad = false; // storage blocked
+    }
+  }
+  return visitedAtLoad;
+}
+const noSubscribe = () => () => {};
+const notVisited = () => false;
 
 /**
  * Theme-switch choreography. Every navbar element flips edge-on in sequence ("out"),
@@ -81,10 +104,11 @@ function Swap({ controls, order, style, ...rest }: SwapProps) {
  */
 export default function LiquidNav() {
   const [active, setActive] = useState("hero");
-  const [delay, setDelay] = useState(2.5);
-  // Hand-off from the hero: the photo lands first (~0.1 screen of scroll), then the name (~0.22)
-  const [pastHero, setPastHero] = useState(false); // photo has landed
-  const [nameIn, setNameIn] = useState(false); // name has landed
+  const delay = useSyncExternalStore(noSubscribe, getVisited, notVisited) ? 0.1 : 2.5;
+  // Hand-off from the hero: the photo lands first, then the name. Thresholds follow the hero's
+  // 80vh pin: the photo has left by ~0.18 of a screen, the last letter by ~0.5
+  const pastHero = useSyncExternalStore(subscribeScroll, () => window.scrollY > window.innerHeight * 0.1, atTop); // photo has landed
+  const nameIn = useSyncExternalStore(subscribeScroll, () => window.scrollY > window.innerHeight * 0.48, atTop); // name has landed
   const [burst, setBurst] = useState<{ key: number; x: number; y: number } | null>(null);
 
   const { resolvedTheme, setTheme } = useTheme();
@@ -94,19 +118,7 @@ export default function LiquidNav() {
   const toggleRef = useRef<HTMLButtonElement>(null);
   const busy = useRef(false);
 
-  const { scrollY } = useScroll();
-  // Thresholds follow the hero's 80vh pin: the photo has left by ~0.18 of a screen, the
-  // last letter by ~0.5
-  useMotionValueEvent(scrollY, "change", (y) => {
-    setPastHero(y > window.innerHeight * 0.1);
-    setNameIn(y > window.innerHeight * 0.48);
-  });
-
   useEffect(() => {
-    setPastHero(window.scrollY > window.innerHeight * 0.1);
-    setNameIn(window.scrollY > window.innerHeight * 0.48);
-    if (sessionStorage.getItem("hasVisited")) setDelay(0.1);
-
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) if (entry.isIntersecting) setActive(entry.target.id);
@@ -175,7 +187,7 @@ export default function LiquidNav() {
 
         {/* Brand */}
         <Swap controls={controls} order={0}>
-          <a
+          <Link
             href="/#hero"
             onClick={(e) => go(e, "hero")}
             className="flex items-center gap-2.5 rounded-full outline-none"
@@ -244,7 +256,7 @@ export default function LiquidNav() {
                 />
               )}
             </span>
-          </a>
+          </Link>
         </Swap>
 
         {/* Section links */}

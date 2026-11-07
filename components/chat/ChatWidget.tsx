@@ -89,12 +89,19 @@ export default function ChatWidget() {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, thinking]);
 
-  useEffect(() => {
-    if (open) {
+  // Opening marks the chat as seen and dismisses the teaser, in the event itself, not an effect
+  const setChatOpen = (next: boolean) => {
+    setOpen(next);
+    if (next) {
       setSeen(true);
       setTeaser(false);
-      setTimeout(() => inputRef.current?.focus(), 250);
     }
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const focus = setTimeout(() => inputRef.current?.focus(), 250);
+    return () => clearTimeout(focus);
   }, [open]);
 
   useEffect(() => {
@@ -336,7 +343,7 @@ export default function ChatWidget() {
           {teaser && !open && (
             <motion.button
               type="button"
-              onClick={() => setOpen(true)}
+              onClick={() => setChatOpen(true)}
               initial={{ opacity: 0, x: 20, scale: 0.9 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 20, scale: 0.9 }}
@@ -350,7 +357,7 @@ export default function ChatWidget() {
 
         <motion.button
           type="button"
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => setChatOpen(!open)}
           aria-label={open ? "Close portfolio assistant" : "Open portfolio assistant"}
           aria-expanded={open}
           initial={{ scale: 0, rotate: -90 }}

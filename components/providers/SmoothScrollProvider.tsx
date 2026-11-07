@@ -25,19 +25,17 @@ export default function SmoothScrollProvider({
       touchMultiplier: 2,
     });
 
-    // @ts-ignore
-    window.lenis = lenis;
-
+    // Not assigned to window.lenis: Lenis keeps its own version/feature metadata on that global
+    let frame = 0;
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      frame = requestAnimationFrame(raf);
     }
 
-    requestAnimationFrame(raf);
+    frame = requestAnimationFrame(raf);
 
     return () => {
-      // @ts-ignore
-      delete window.lenis;
+      cancelAnimationFrame(frame); // stop the loop, or it keeps driving a destroyed instance
       lenis.destroy();
     };
   }, [lowEnd]);
